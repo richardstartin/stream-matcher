@@ -1,7 +1,7 @@
 package io.github.richardstartin.streammatcher.benchmark;
 
 import org.openjdk.jmh.annotations.*;
-import uk.co.openkappa.ssb.stringsearch.*;
+import uk.co.openkappa.ssb.stringsearch.Searcher;
 import uk.co.openkappa.ssb.stringsearch.shiftand.*;
 
 import java.util.SplittableRandom;

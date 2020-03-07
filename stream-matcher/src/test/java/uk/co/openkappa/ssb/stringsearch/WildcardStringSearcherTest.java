@@ -1,10 +1,11 @@
 package uk.co.openkappa.ssb.stringsearch;
 
+import io.github.richardstartin.streammatcher.relations.EquivalenceRelation;
+import io.github.richardstartin.streammatcher.search.shiftor.ShiftOrWildCardSearcher;
+import io.github.richardstartin.streammatcher.search.shiftor.SparseShiftOrWildCardSearcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import uk.co.openkappa.ssb.stringsearch.shiftor.ShiftOrWildCardSearcher;
-import uk.co.openkappa.ssb.stringsearch.shiftor.SparseShiftOrWildCardSearcher;
 
 import java.util.regex.Pattern;
 
@@ -14,9 +15,25 @@ import static uk.co.openkappa.ssb.stringsearch.CaseInsensitiveEquivalenceRelatio
 @RunWith(Parameterized.class)
 public class WildcardStringSearcherTest {
 
+    private static final EquivalenceRelation CASE_INSENSITIVE = EquivalenceRelation.transformed(LOWER_CASE, CaseInsensitiveEquivalenceRelationTest::toUpper);
+    private final String data;
+    private final String term;
+    private final int expected;
+    public WildcardStringSearcherTest(String data, String term) {
+        this.data = data;
+        this.term = term;
+        Pattern pattern = Pattern.compile(term);
+        var matcher = pattern.matcher(data);
+        if (matcher.find()) {
+            this.expected = matcher.start();
+        } else {
+            this.expected = -1;
+        }
+    }
+
     @Parameterized.Parameters(name = "{0}/{1}")
     public static Object[][] params() {
-        return new Object[][] {
+        return new Object[][]{
                 {"abcdefgh", "a."},
                 {"abcdefgh", "b."},
                 {"abcdefgh", "c."},
@@ -132,21 +149,27 @@ public class WildcardStringSearcherTest {
         };
     }
 
-    private final String data;
-    private final String term;
-    private final int expected;
-    private static final EquivalenceRelation CASE_INSENSITIVE = EquivalenceRelation.transformed(LOWER_CASE, CaseInsensitiveEquivalenceRelationTest::toUpper);
-
-    public WildcardStringSearcherTest(String data, String term) {
-        this.data = data;
-        this.term = term;
-        Pattern pattern = Pattern.compile(term);
-        var matcher = pattern.matcher(data);
-        if (matcher.find()) {
-            this.expected = matcher.start();
-        } else {
-            this.expected = -1;
+    private static byte[] toPattern(String term) {
+        // works for "not X" expressed as [^X]
+        int ignore = 0;
+        for (int i = 0; i < term.length(); ++i) {
+            if (term.charAt(i) == '[' || term.charAt(i) == ']') {
+                ++ignore;
+            }
         }
+        byte[] pattern = new byte[term.length() - ignore];
+        int p = 0;
+        for (int i = 0; i < term.length(); ++i) {
+            char c = term.charAt(i);
+            if (c == '.') {
+                pattern[p++] = 0x1;
+            } else if (c == '^') {
+                pattern[p++] = 0x2;
+            } else if (c != '[' && c != ']') {
+                pattern[p++] = (byte) c;
+            }
+        }
+        return pattern;
     }
 
     @Test
@@ -165,29 +188,5 @@ public class WildcardStringSearcherTest {
         assertEquals(expected, searcher.find(data.getBytes()));
         assertEquals(expected, searcher.find(data.toUpperCase().getBytes()));
         assertEquals(expected, searcher.find(data.toLowerCase().getBytes()));
-    }
-
-
-    private static byte[] toPattern(String term) {
-        // works for "not X" expressed as [^X]
-        int ignore = 0;
-        for (int i = 0; i < term.length(); ++i) {
-            if (term.charAt(i) == '[' || term.charAt(i) == ']') {
-                ++ignore;
-            }
-        }
-        byte[] pattern = new byte[term.length() - ignore];
-        int p = 0;
-        for (int i = 0; i < term.length(); ++i) {
-            char c = term.charAt(i);
-            if (c == '.') {
-                pattern[p++] = 0x1;
-            } else if (c == '^') {
-                pattern[p++] = 0x2;
-            } else if (c != '[' && c != ']') {
-                pattern[p++] = (byte)c;
-            }
-        }
-        return pattern;
     }
 }

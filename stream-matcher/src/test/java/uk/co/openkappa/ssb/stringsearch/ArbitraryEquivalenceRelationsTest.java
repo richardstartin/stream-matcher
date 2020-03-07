@@ -1,5 +1,6 @@
 package uk.co.openkappa.ssb.stringsearch;
 
+import io.github.richardstartin.streammatcher.relations.EquivalenceRelation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -16,9 +17,9 @@ public class ArbitraryEquivalenceRelationsTest {
     private final char value;
     private final Set<Character> relation;
     private final EquivalenceRelation sut = EquivalenceRelation.of(
-            new byte[] { 'x', 'y', 'z'},
-            new byte[] { 'a', 'b', 'c'},
-            new byte[] { 'd', 'e', 'f'}
+            new byte[]{'x', 'y', 'z'},
+            new byte[]{'a', 'b', 'c'},
+            new byte[]{'d', 'e', 'f'}
     );
 
     public ArbitraryEquivalenceRelationsTest(char value, Set<Character> relation) {
@@ -28,7 +29,7 @@ public class ArbitraryEquivalenceRelationsTest {
 
     @Parameterized.Parameters
     public static Object[][] params() {
-        return new Object[][] {
+        return new Object[][]{
                 {'a', Set.of('a', 'b', 'c')},
                 {'b', Set.of('a', 'b', 'c')},
                 {'c', Set.of('a', 'b', 'c')},
@@ -42,8 +43,8 @@ public class ArbitraryEquivalenceRelationsTest {
     @Test
     public void verify() {
         var i = new AtomicInteger(0);
-        sut.forEachEquivalentTo((byte)value, v -> {
-            assertTrue(relation.contains((char)v));
+        sut.forEachEquivalentTo((byte) value, v -> {
+            assertTrue(relation.contains((char) v));
             i.incrementAndGet();
         });
         assertEquals(relation.size(), i.get());

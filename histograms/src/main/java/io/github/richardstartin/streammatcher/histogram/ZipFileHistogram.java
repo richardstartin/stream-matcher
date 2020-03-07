@@ -40,6 +40,7 @@ public class ZipFileHistogram {
     private byte lastByte;
     private int lastBase64;
     private boolean first = true;
+
     public ZipFileHistogram(Path zipFile, Path output) {
         this.zipFile = zipFile;
         this.output = output;

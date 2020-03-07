@@ -1,18 +1,29 @@
 package uk.co.openkappa.ssb.stringsearch;
 
+import io.github.richardstartin.streammatcher.search.shiftor.ShiftOrThresholdSearcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import uk.co.openkappa.ssb.stringsearch.shiftor.ShiftOrThresholdSearcher;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class FuzzyStringSearcherTest {
 
+    private final int expectedIndex;
+    private final int threshold;
+    private final byte[] text;
+    private final byte[] term;
+    public FuzzyStringSearcherTest(String text, String term, int threshold, int index) {
+        this.text = text.getBytes();
+        this.term = term.getBytes();
+        this.threshold = threshold;
+        this.expectedIndex = index;
+    }
+
     @Parameterized.Parameters(name = "{0}/{1}/{2}/{3}")
     public static Object[][] params() {
-        return new Object[][] {
+        return new Object[][]{
                 {"abcdefgh", "a", 0, 0},
                 {"abcdefgh", "a", 1, 0},
                 {"abcdefgh", "x", 1, 0},
@@ -41,20 +52,6 @@ public class FuzzyStringSearcherTest {
                 {"011111111111111111111111111111111111", "10", 1, 1}
         };
     }
-
-
-    private final int expectedIndex;
-    private final int threshold;
-    private final byte[] text;
-    private final byte[] term;
-
-    public FuzzyStringSearcherTest(String text, String term, int threshold, int index) {
-        this.text = text.getBytes();
-        this.term = term.getBytes();
-        this.threshold = threshold;
-        this.expectedIndex = index;
-    }
-
 
     @Test
     public void findFuzzyMatch() {

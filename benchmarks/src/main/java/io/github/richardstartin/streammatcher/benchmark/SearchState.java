@@ -1,15 +1,13 @@
 package io.github.richardstartin.streammatcher.benchmark;
 
-import org.openjdk.jmh.annotations.*;
-import uk.co.openkappa.ssb.stringsearch.*;
 import io.github.richardstartin.streammatcher.generators.DataGenerator;
 import io.github.richardstartin.streammatcher.generators.DataSets;
+import org.openjdk.jmh.annotations.*;
+import uk.co.openkappa.ssb.stringsearch.Searcher;
 import uk.co.openkappa.ssb.stringsearch.shiftand.*;
 import uk.co.openkappa.ssb.stringsearch.shiftor.ShiftOrSearcher;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.SplittableRandom;
 
 @State(Scope.Thread)

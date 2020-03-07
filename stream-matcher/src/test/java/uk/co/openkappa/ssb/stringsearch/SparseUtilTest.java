@@ -1,11 +1,10 @@
 package uk.co.openkappa.ssb.stringsearch;
 
+import io.github.richardstartin.streammatcher.Utils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class SparseUtilTest {
@@ -26,12 +25,12 @@ public class SparseUtilTest {
     @Parameterized.Parameters
     public static Object[][] params() {
         return new Object[][]{
-                {new byte[] {1, 2, 3}, (byte)1, 0},
-                {new byte[] {1, 2, 3}, (byte)2, 1},
-                {new byte[] {1, 2, 3}, (byte)3, 2},
-                {new byte[] {1, 65, (byte)129}, (byte)1, 0},
-                {new byte[] {1, 65, (byte)129}, (byte)65, 1},
-                {new byte[] {1, 65, (byte)129}, (byte)129, 2},
+                {new byte[]{1, 2, 3}, (byte) 1, 0},
+                {new byte[]{1, 2, 3}, (byte) 2, 1},
+                {new byte[]{1, 2, 3}, (byte) 3, 2},
+                {new byte[]{1, 65, (byte) 129}, (byte) 1, 0},
+                {new byte[]{1, 65, (byte) 129}, (byte) 65, 1},
+                {new byte[]{1, 65, (byte) 129}, (byte) 129, 2},
         };
     }
 

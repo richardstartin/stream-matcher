@@ -1,8 +1,8 @@
 package io.github.richardstartin.streammatcher.benchmark;
 
 import org.openjdk.jol.info.GraphLayout;
-import uk.co.openkappa.ssb.stringsearch.shiftand.ShiftAndSearcher;
 import uk.co.openkappa.ssb.stringsearch.shiftand.BitSlicedShiftAndSearcher;
+import uk.co.openkappa.ssb.stringsearch.shiftand.ShiftAndSearcher;
 import uk.co.openkappa.ssb.stringsearch.shiftand.SparseShiftAndSearcher;
 
 public class Layout {

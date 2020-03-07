@@ -1,5 +1,6 @@
 package uk.co.openkappa.ssb.stringsearch;
 
+import io.github.richardstartin.streammatcher.relations.EquivalenceRelation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -20,19 +21,22 @@ public class CaseInsensitiveEquivalenceRelationTest {
             'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
             'y', 'z'
     };
-
-    static int toUpper(int lower) {
-        return lower - (int) 'a' + (int) 'A';
-    }
+    private final char value;
+    private final Set<Character> relation;
+    private final EquivalenceRelation sut = EquivalenceRelation.transformed(LOWER_CASE, CaseInsensitiveEquivalenceRelationTest::toUpper);
 
     public CaseInsensitiveEquivalenceRelationTest(char value, Set<Character> relation) {
         this.value = value;
         this.relation = relation;
     }
 
+    static int toUpper(int lower) {
+        return lower - (int) 'a' + (int) 'A';
+    }
+
     @Parameterized.Parameters
     public static Object[][] params() {
-        return new Object[][] {
+        return new Object[][]{
                 {'a', Set.of('a', 'A')},
                 {'p', Set.of('p', 'P')},
                 {'z', Set.of('z', 'Z')},
@@ -41,16 +45,11 @@ public class CaseInsensitiveEquivalenceRelationTest {
         };
     }
 
-    private final char value;
-    private final Set<Character> relation;
-    private final EquivalenceRelation sut = EquivalenceRelation.transformed(LOWER_CASE, CaseInsensitiveEquivalenceRelationTest::toUpper);
-
-
     @Test
     public void testCaseInsensitiveLatin1LowerCase() {
         var i = new AtomicInteger(0);
-        sut.forEachEquivalentTo((byte)value, v -> {
-            assertTrue(relation.contains((char)v));
+        sut.forEachEquivalentTo((byte) value, v -> {
+            assertTrue(relation.contains((char) v));
             i.incrementAndGet();
         });
         assertEquals(relation.size(), i.get());
@@ -59,8 +58,8 @@ public class CaseInsensitiveEquivalenceRelationTest {
     @Test
     public void testCaseInsensitiveLatin1UpperCase() {
         var i = new AtomicInteger(0);
-        sut.forEachEquivalentTo((byte)Character.toUpperCase(value), v -> {
-            assertTrue(relation.contains((char)v));
+        sut.forEachEquivalentTo((byte) Character.toUpperCase(value), v -> {
+            assertTrue(relation.contains((char) v));
             i.incrementAndGet();
         });
         assertEquals(relation.size(), i.get());

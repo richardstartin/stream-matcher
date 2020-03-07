@@ -2,6 +2,7 @@ package uk.co.openkappa.ssb.stringsearch;
 
 import io.github.richardstartin.streammatcher.generators.DataGenerator;
 import io.github.richardstartin.streammatcher.generators.DataSets;
+import io.github.richardstartin.streammatcher.search.Searcher;
 
 import java.util.Arrays;
 import java.util.SplittableRandom;
@@ -20,6 +21,71 @@ public class Fuzzing {
 
     private static final long SEED = parseLong(System.getProperty("fuzz.seed", String.valueOf(System.nanoTime())));
     private static final int ITERATIONS = parseInt(System.getProperty("fuzz.iterations", "10000"));
+
+    public static TestCase[] generateLiteralTestCases() {
+        SplittableRandom random = new SplittableRandom(SEED);
+        return Arrays.stream(DataSets.values())
+                .flatMap(ds -> IntStream.range(0, Runtime.getRuntime().availableProcessors())
+                        .mapToObj(i -> new TestCase(random.split(), ds.create(SEED), 500, ds.name())))
+                .toArray(TestCase[]::new);
+    }
+
+    public static long verify(Supplier<TestCase[]> supplier,
+                              ToIntFunction<TestCase> reference,
+                              Function<byte[], Searcher> searcherConstructor) {
+        ToIntFunction<TestCase> sut = tc -> search(searcherConstructor, tc);
+        AtomicLong casesEvaluated = new AtomicLong();
+        Arrays.stream(supplier.get())
+                .parallel()
+                .forEach(testCase -> {
+                    for (int i = 0; i < ITERATIONS; ++i) {
+                        evaluate(testCase, reference, sut);
+                    }
+                    casesEvaluated.getAndAdd(ITERATIONS);
+                });
+        return casesEvaluated.get();
+    }
+
+    public static void evaluate(TestCase testCase,
+                                ToIntFunction<TestCase> reference,
+                                ToIntFunction<TestCase> sut) {
+        testCase.regenenate();
+        int x = reference.applyAsInt(testCase);
+        int y = sut.applyAsInt(testCase);
+        if (x != y) {
+            assertEquals(testCase.toString(), x, y);
+        }
+    }
+
+    public static int literalMatchReferenceImplementation(TestCase testCase) {
+        byte[] text = testCase.text;
+        byte[] pattern = testCase.pattern;
+        for (int i = 0; i < text.length; ++i) {
+            int j = 0;
+            for (; j < pattern.length && i + j < text.length; ++j) {
+                if (text[i + j] != pattern[j]) {
+                    break;
+                }
+            }
+            if (j == pattern.length) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int search(Function<byte[], Searcher> ctor, TestCase testCase) {
+        var searcher = ctor.apply(testCase.pattern);
+        int result = searcher.find(testCase.text);
+        if (searcher instanceof AutoCloseable) {
+            try {
+                ((AutoCloseable) searcher).close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return result;
+    }
 
     static class TestCase {
         private final String dataSet;
@@ -54,74 +120,6 @@ public class Fuzzing {
         public String toString() {
             return "dataset=" + dataSet + ", pattern=" + new String(pattern, UTF_8) + ", text=" + new String(text, UTF_8);
         }
-    }
-
-
-    public static TestCase[] generateLiteralTestCases() {
-        SplittableRandom random = new SplittableRandom(SEED);
-        return Arrays.stream(DataSets.values())
-                .flatMap(ds -> IntStream.range(0, Runtime.getRuntime().availableProcessors())
-                        .mapToObj(i -> new TestCase(random.split(), ds.create(SEED), 500, ds.name())))
-                .toArray(TestCase[]::new);
-    }
-
-    public static long verify(Supplier<TestCase[]> supplier,
-                              ToIntFunction<TestCase> reference,
-                              Function<byte[], Searcher> searcherConstructor) {
-        ToIntFunction<TestCase> sut = tc -> search(searcherConstructor, tc);
-        AtomicLong casesEvaluated = new AtomicLong();
-        Arrays.stream(supplier.get())
-                .parallel()
-                .forEach(testCase -> {
-                    for (int i = 0; i < ITERATIONS; ++i) {
-                        evaluate(testCase, reference, sut);
-                    }
-                    casesEvaluated.getAndAdd(ITERATIONS);
-                });
-        return casesEvaluated.get();
-    }
-
-
-    public static void evaluate(TestCase testCase,
-                                ToIntFunction<TestCase> reference,
-                                ToIntFunction<TestCase> sut) {
-        testCase.regenenate();
-        int x = reference.applyAsInt(testCase);
-        int y = sut.applyAsInt(testCase);
-        if (x != y) {
-            assertEquals(testCase.toString(), x, y);
-        }
-    }
-
-
-    public static int literalMatchReferenceImplementation(TestCase testCase) {
-        byte[] text = testCase.text;
-        byte[] pattern = testCase.pattern;
-        for (int i = 0; i < text.length; ++i) {
-            int j = 0;
-            for (; j < pattern.length && i + j < text.length; ++j) {
-                if (text[i + j] != pattern[j]) {
-                    break;
-                }
-            }
-            if (j == pattern.length) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public static int search(Function<byte[], Searcher> ctor, TestCase testCase) {
-        var searcher = ctor.apply(testCase.pattern);
-        int result = searcher.find(testCase.text);
-        if (searcher instanceof AutoCloseable) {
-            try {
-                ((AutoCloseable)searcher).close();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return result;
     }
 
 }

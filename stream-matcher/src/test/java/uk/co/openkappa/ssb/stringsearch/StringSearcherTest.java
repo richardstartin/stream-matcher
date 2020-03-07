@@ -1,22 +1,35 @@
 package uk.co.openkappa.ssb.stringsearch;
 
+import io.github.richardstartin.streammatcher.search.shiftand.BitSlicedShiftAndSearcher;
+import io.github.richardstartin.streammatcher.search.shiftand.ShiftAndSearcher;
+import io.github.richardstartin.streammatcher.search.shiftand.SparseShiftAndSearcher;
+import io.github.richardstartin.streammatcher.search.shiftand.UnsafeBitSlicedShiftAndSearcher;
+import io.github.richardstartin.streammatcher.search.shiftand.unsafe.*;
+import io.github.richardstartin.streammatcher.search.shiftor.BitSlicedShiftOrSearcher;
+import io.github.richardstartin.streammatcher.search.shiftor.ShiftOrSearcher;
+import io.github.richardstartin.streammatcher.search.shiftor.ShiftOrWildCardSearcher;
+import io.github.richardstartin.streammatcher.search.shiftor.SparseShiftOrWildCardSearcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import uk.co.openkappa.ssb.stringsearch.shiftand.*;
-import uk.co.openkappa.ssb.stringsearch.shiftor.BitSlicedShiftOrSearcher;
-import uk.co.openkappa.ssb.stringsearch.shiftor.ShiftOrSearcher;
-import uk.co.openkappa.ssb.stringsearch.shiftor.ShiftOrWildCardSearcher;
-import uk.co.openkappa.ssb.stringsearch.shiftor.SparseShiftOrWildCardSearcher;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class StringSearcherTest {
 
+    private final String data;
+    private final String term;
+    private final int expected;
+    public StringSearcherTest(String data, String term) {
+        this.data = data;
+        this.term = term;
+        this.expected = data.indexOf(term);
+    }
+
     @Parameterized.Parameters(name = "{0}/{1}")
     public static Object[][] params() {
-        return new Object[][] {
+        return new Object[][]{
                 {"abcdefgh", "ab"},
                 {"abcdefgh", "bc"},
                 {"abcdefgh", "cd"},
@@ -63,16 +76,6 @@ public class StringSearcherTest {
                 {"ababcdfeeeeeeeeeepopopopopopopo_enough_enough_enough_askljdl;aksjd", "1"},
                 {"ababcdfeeeeeeeeeepopopopopopopo_enough_enough_enough_askljdl;aksjd", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
         };
-    }
-
-    private final String data;
-    private final String term;
-    private final int expected;
-
-    public StringSearcherTest(String data, String term) {
-        this.data = data;
-        this.term = term;
-        this.expected = data.indexOf(term);
     }
 
     @Test
